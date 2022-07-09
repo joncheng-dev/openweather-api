@@ -6,6 +6,15 @@
   <body>
     <div class="container">
       <h1>Get Weather Conditions from Anywhere!</h1>
+      <!-- Additional Weather Data Options -->
+      <div>
+        <input type="checkbox" id="condition" name="condition" />
+        <label for="condition">Atmospheric Condition</label>
+      </div>
+      <div>
+        <input type="checkbox" id="visibility" name="visibility" />
+        <label for="visibility">Visibility</label>
+      </div>
       <!-- Enter a City Name -->
       <label for="city">Enter a City:</label>
       <input id="city" type="text" />
@@ -39,6 +48,8 @@
       <div class="showHighTemp"></div>
       <div class="showHumidity"></div>
       <div class="showPressure"></div>
+      <div class="showConditions"></div>
+      <div class="showVisibility"></div>
     </div>
   </body>
 </html>
