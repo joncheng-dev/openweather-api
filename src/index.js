@@ -11,9 +11,35 @@ $(document).ready(function () {
     const city = $("#city").val();
     $("#city").val("");
 
+    const address = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY}`;
+    callApi(additions, address);
+  });
+  // Search by Zip Code
+  $("#weatherByZip").click(function () {
+    const additions = checkedBoxes();
+    const zipCode = $("#zipCode").val();
+    $("#zipCode").val("");
+
+    let countryCode = "us";
+    const address = `https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},${countryCode}&appid=${process.env.API_KEY}`;
+    callApi(additions, address);
+  });
+  // Search by Coordinates
+  $("#weatherbyCoord").click(function () {
+    const additions = checkedBoxes();
+    const coordLat = $("#coordLat").val();
+    $("#coordLat").val("");
+    const coordLong = $("#coordLong").val();
+    $("#coordLong").val("");
+
+    const address = `https://api.openweathermap.org/data/2.5/weather?lat=${coordLat}&lon=${coordLong}&appid=${process.env.API_KEY}`;
+    callApi(additions, address);
+  });
+
+  function callApi(additions, apiAddress) {
     let promise = new Promise(function (resolve, reject) {
       let request = new XMLHttpRequest();
-      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY}`;
+      const url = apiAddress;
 
       request.onload = function () {
         if (this.status === 200) {
@@ -47,50 +73,7 @@ $(document).ready(function () {
         $(".showVisibility").text("");
       }
     );
-  });
-  // Search by Zip Code
-  $("#weatherByZip").click(function () {
-    const additions = checkedBoxes();
-    const zipCode = $("#zipCode").val();
-    $("#zipCode").val("");
-
-    let countryCode = "us";
-    let request = new XMLHttpRequest();
-    const url = `https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},${countryCode}&appid=${process.env.API_KEY}`;
-
-    request.onreadystatechange = function () {
-      if (this.readyState === 4 && this.status === 200) {
-        const response = JSON.parse(this.responseText);
-        getElements(response);
-        additionalElements(additions, response);
-      }
-    };
-
-    request.open("GET", url, true);
-    request.send();
-  });
-  // Search by Coordinates
-  $("#weatherbyCoord").click(function () {
-    const additions = checkedBoxes();
-    const coordLat = $("#coordLat").val();
-    $("#coordLat").val("");
-    const coordLong = $("#coordLong").val();
-    $("#coordLong").val("");
-
-    let request = new XMLHttpRequest();
-    const url = `https://api.openweathermap.org/data/2.5/weather?lat=${coordLat}&lon=${coordLong}&appid=${process.env.API_KEY}`;
-
-    request.onreadystatechange = function () {
-      if (this.readyState === 4 && this.status === 200) {
-        const response = JSON.parse(this.responseText);
-        getElements(response);
-        additionalElements(additions, response);
-      }
-    };
-
-    request.open("GET", url, true);
-    request.send();
-  });
+  }
 
   function getElements(response) {
     $(".showTemp").text(
