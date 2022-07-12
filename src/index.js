@@ -11,19 +11,42 @@ $(document).ready(function () {
     const city = $("#city").val();
     $("#city").val("");
 
-    let request = new XMLHttpRequest();
-    const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY}`;
+    let promise = new Promise(function (resolve, reject) {
+      let request = new XMLHttpRequest();
+      const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY}`;
 
-    request.onreadystatechange = function () {
-      if (this.readyState === 4 && this.status === 200) {
-        const response = JSON.parse(this.responseText);
-        getElements(response);
-        additionalElements(additions, response);
+      request.onload = function () {
+        if (this.status === 200) {
+          resolve(request.response);
+        } else {
+          reject(request.response);
+        }
+      };
+
+      request.open("GET", url, true);
+      request.send();
+    });
+    promise.then(
+      function (response) {
+        const body = JSON.parse(response);
+        getElements(body);
+        additionalElements(additions, body);
+        $(".showErrors").text("");
+      },
+      function (error) {
+        $(".showConditions").text("");
+        $(".showErrors").text(
+          `There was an error processing your request: ${error}`
+        );
+        $(".showFeelsLikeTemp").text("");
+        $(".showsHighTemp").text("");
+        $(".showHumidity").text("");
+        $(".showLowTemp").text("");
+        $(".showPressure").text("");
+        $(".showTemp").text("");
+        $(".showVisibility").text("");
       }
-    };
-
-    request.open("GET", url, true);
-    request.send();
+    );
   });
   // Search by Zip Code
   $("#weatherByZip").click(function () {
@@ -76,12 +99,8 @@ $(document).ready(function () {
     $(".showFeelsLikeTemp").text(
       `Feels like: ${kToF(response.main.feels_like)} degrees.`
     );
-    $(".showLowTemp").text(
-      `Today's Low: ${kToF(response.main.temp_min)} degrees.`
-    );
-    $(".showHighTemp").text(
-      `Today's High: ${kToF(response.main.temp_max)} degrees.`
-    );
+    $(".showLowTemp").text(`Low: ${kToF(response.main.temp_min)} degrees.`);
+    $(".showHighTemp").text(`High: ${kToF(response.main.temp_max)} degrees.`);
     $(".showHumidity").text(`Humidity: ${response.main.humidity}%`);
     $(".showPressure").text(`Pressure: ${response.main.pressure} hPa.`);
   }
