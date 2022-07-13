@@ -2,6 +2,7 @@ import $ from "jquery";
 import "bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import "./css/styles.css";
+import WeatherService from "./weather-service.js";
 
 // User Interface Logic
 $(document).ready(function () {
@@ -9,8 +10,7 @@ $(document).ready(function () {
   $("#weatherByCity").click(function () {
     const additions = checkedBoxes();
     const city = $("#city").val();
-    $("#city").val("");
-
+    clearFields();
     const address = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${process.env.API_KEY}`;
     callApi(additions, address);
   });
@@ -18,8 +18,7 @@ $(document).ready(function () {
   $("#weatherByZip").click(function () {
     const additions = checkedBoxes();
     const zipCode = $("#zipCode").val();
-    $("#zipCode").val("");
-
+    clearFields();
     let countryCode = "us";
     const address = `https://api.openweathermap.org/data/2.5/weather?zip=${zipCode},${countryCode}&appid=${process.env.API_KEY}`;
     callApi(additions, address);
@@ -28,53 +27,44 @@ $(document).ready(function () {
   $("#weatherbyCoord").click(function () {
     const additions = checkedBoxes();
     const coordLat = $("#coordLat").val();
-    $("#coordLat").val("");
     const coordLong = $("#coordLong").val();
-    $("#coordLong").val("");
-
+    clearFields();
     const address = `https://api.openweathermap.org/data/2.5/weather?lat=${coordLat}&lon=${coordLong}&appid=${process.env.API_KEY}`;
     callApi(additions, address);
   });
 
-  function callApi(additions, apiAddress) {
-    let promise = new Promise(function (resolve, reject) {
-      let request = new XMLHttpRequest();
-      const url = apiAddress;
+  function callApi(additions, address) {
+    let promise = WeatherService.getWeather(address);
 
-      request.onload = function () {
-        if (this.status === 200) {
-          resolve(request.response);
-        } else {
-          reject(request.response);
-        }
-      };
-
-      request.open("GET", url, true);
-      request.send();
-    });
     promise.then(
       function (response) {
         const body = JSON.parse(response);
         getElements(body);
         additionalElements(additions, body);
-        $(".showErrors").text("");
       },
       function (error) {
-        $(".showConditions").text("");
         $(".showErrors").text(
           `There was an error processing your request: ${error}`
         );
-        $(".showFeelsLikeTemp").text("");
-        $(".showsHighTemp").text("");
-        $(".showHumidity").text("");
-        $(".showLowTemp").text("");
-        $(".showPressure").text("");
-        $(".showTemp").text("");
-        $(".showVisibility").text("");
       }
     );
   }
-
+  // User interface
+  function clearFields() {
+    $("#city").val("");
+    $("#zipCode").val("");
+    $("#coordLat").val("");
+    $("#coordLong").val("");
+    $(".showConditions").text("");
+    $(".showFeelsLikeTemp").text("");
+    $(".showsHighTemp").text("");
+    $(".showHumidity").text("");
+    $(".showLowTemp").text("");
+    $(".showPressure").text("");
+    $(".showTemp").text("");
+    $(".showVisibility").text("");
+  }
+  // User interface
   function getElements(response) {
     $(".showTemp").text(
       `Temperature (in F): ${kToF(response.main.temp)} degrees.`
@@ -87,7 +77,7 @@ $(document).ready(function () {
     $(".showHumidity").text(`Humidity: ${response.main.humidity}%`);
     $(".showPressure").text(`Pressure: ${response.main.pressure} hPa.`);
   }
-
+  // User interface
   function additionalElements(additions, response) {
     if (additions[0] === 1) {
       $(".showConditions").text(
@@ -98,7 +88,7 @@ $(document).ready(function () {
       $(".showVisibility").text(`Visibility: ${response.visibility}.`);
     }
   }
-
+  // Business logic
   function kToF(kelvin) {
     let fahrenheit;
     fahrenheit = (kelvin - 273.15) * (9 / 5) + 32;
